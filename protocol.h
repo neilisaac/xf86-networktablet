@@ -10,16 +10,15 @@
 
 typedef struct _EventPacket
 {
-	char type;
-	struct {
+	char type;	/* EVENT_TYPE_... */
+	struct {	/* required */
 		short x, y;
 		short pressure;
 	};
-	union {
-		struct {
-			char button;
-			char down;
-		};
+
+	struct {	/* only required for EVENT_TYPE_BUTTON */
+		char button;		/* number of button, beginning with 0 */
+		char down;		/* 1 = button down, 0 = button up */
 	};
 } EventPacket;
 
