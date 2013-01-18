@@ -38,7 +38,7 @@ static pointer TabletPlug(pointer module, pointer options, int *errmaj, int *err
 static void TabletUnplug(pointer p);
 static int TabletControl(DeviceIntPtr device, int what);
 static int _tablet_init_buttons(DeviceIntPtr device);
-static int _tablet_init_axes(DeviceIntPtr device);
+static int _tablet_init_axes(DeviceIntPtr device, int firstCall);
 static void _tablet_init_axes_labels(TabletDevicePtr pTablet, int natoms, Atom *atoms);
 static void TabletReadInput(InputInfoPtr pInfo);
 
@@ -85,6 +85,9 @@ int TabletPreInit(InputDriverPtr drv, InputInfoPtr pInfo, int flags) {
 		xf86DeleteInput(pInfo, 0);
 		return BadAlloc;
 	}
+	// 128x128 tablet resolution until correct resolution received by device
+	pTablet->maxX = pTablet->maxY = 128 -1;
+	pTablet->maxPressure = 10000;
 	pInfo->private = pTablet;
 
 	pInfo->type_name = XI_TABLET; /* see XI.h */
@@ -130,7 +133,7 @@ int TabletControl(DeviceIntPtr device, int what)
 	case DEVICE_INIT:
 		xf86Msg(X_INFO, "%s: Init\n", pInfo->name);
 		if ((ret = _tablet_init_buttons(device)) != Success) return ret;
-		if ((ret = _tablet_init_axes(device)) != Success) return ret;
+		if ((ret = _tablet_init_axes(device, TRUE)) != Success) return ret;
 		break;
 	case DEVICE_ON:
 		xf86Msg(X_INFO, "%s: On\n", pInfo->name);
@@ -178,7 +181,7 @@ int _tablet_init_buttons(DeviceIntPtr device)
 	return Success;
 }
 
-int _tablet_init_axes(DeviceIntPtr device)
+int _tablet_init_axes(DeviceIntPtr device, int firstCall)
 {
 	InputInfoPtr pInfo = device->public.devicePrivate;
 	TabletDevicePtr pTablet = pInfo->private;
@@ -186,40 +189,38 @@ int _tablet_init_axes(DeviceIntPtr device)
 	const int num_axes = 3;
 	Atom *labels;
 
-	// x, y
-	labels = calloc(num_axes, sizeof(Atom));
+	if (firstCall) {
+		labels = calloc(num_axes, sizeof(Atom));
 
-	if (!InitValuatorClassDeviceStruct(device,
-		num_axes,
-		#if GET_ABI_MAJOR(ABI_XINPUT_VERSION) >= 7
-		labels,
-		#endif
-		GetMotionHistorySize(),
-		Absolute)) {
+		if (!InitValuatorClassDeviceStruct(device,
+			num_axes,
+			#if GET_ABI_MAJOR(ABI_XINPUT_VERSION) >= 7
+			labels,
+			#endif
+			GetMotionHistorySize(),
+			Absolute)) {
+			free(labels);
+			return BadAlloc;
+		}
 		free(labels);
-		return BadAlloc;
 	}
 
-	// TODO: hardcoded 1280x800
 	xf86InitValuatorAxisStruct(device, 0, XIGetKnownProperty(AXIS_LABEL_PROP_ABS_X),
-		0, 1280,
-		1280,
-		0, 1280,
+		0, pTablet->maxX,
+		1,
+		0, 1,
 		Absolute);
 	xf86InitValuatorAxisStruct(device, 1, XIGetKnownProperty(AXIS_LABEL_PROP_ABS_Y),
-		0, 800,
-		800,
-		0, 800,
-		Absolute);
-
-	// pressure
-	xf86InitValuatorAxisStruct(device, 2, XIGetKnownProperty(AXIS_LABEL_PROP_ABS_PRESSURE),
-		0, 10000,
+		0, pTablet->maxY,
 		1,
 		0, 1,
 		Absolute);
 
-	free(labels);
+	xf86InitValuatorAxisStruct(device, 2, XIGetKnownProperty(AXIS_LABEL_PROP_ABS_PRESSURE),
+		0, pTablet->maxPressure,
+		1,
+		0, 1,
+		Absolute);
 	
 	return Success;
 }
@@ -244,6 +245,12 @@ void TabletReadInput(InputInfoPtr pInfo)
 			case EVENT_TYPE_BUTTON:
 				xf86PostButtonEvent(pInfo->dev, TRUE, event.button, event.down, 0, 3, pTablet->x, pTablet->y, pTablet->pressure);
 				break;
+			case EVENT_TYPE_SET_RESOLUTION:
+				pTablet->maxX = ntohs(event.x);
+				pTablet->maxY = ntohs(event.y);
+				pTablet->maxPressure = ntohs(event.pressure);
+				_tablet_init_axes(pInfo->dev, FALSE);
+				// break;
 			}
 		}
 	}

@@ -1,7 +1,7 @@
 
 typedef struct _TabletDeviceRec
 {
-	int x, y;
-	int pressure;
+	int maxX, maxY, maxPressure;
+	int x, y, pressure;
 } TabletDeviceRec, *TabletDevicePtr;
 
