@@ -230,16 +230,16 @@ void TabletReadInput(InputInfoPtr pInfo)
 	while(xf86WaitForInput(pInfo->fd, 0) > 0) {
 		// each EventPacket has at least 7 bytes
 		if (recv(pInfo->fd, &event, sizeof(event), 0) >= 7) {
-			pTablet->x = ntohs(event.x);
-			pTablet->y = ntohs(event.y);
-			pTablet->pressure = ntohs(event.pressure);
+			short x = ntohs(event.x);
+			short y = ntohs(event.y);
+			short pressure = ntohs(event.pressure);
 
 			switch (event.type) {
 			case EVENT_TYPE_MOTION:
-				xf86PostMotionEvent(pInfo->dev, TRUE, 0, 3, pTablet->x, pTablet->y, pTablet->pressure);
+				xf86PostMotionEvent(pInfo->dev, TRUE, 0, 3, x, y, pressure);
 				break;
 			case EVENT_TYPE_BUTTON:
-				xf86PostButtonEvent(pInfo->dev, TRUE, event.button, event.down, 0, 3, pTablet->x, pTablet->y, pTablet->pressure);
+				xf86PostButtonEvent(pInfo->dev, TRUE, event.button, event.down, 0, 3, x, y, pressure);
 				break;
 			case EVENT_TYPE_SET_RESOLUTION:
 				pTablet->maxX = ntohs(event.x);
