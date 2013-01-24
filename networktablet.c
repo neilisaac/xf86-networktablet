@@ -39,7 +39,6 @@ static void TabletUnplug(pointer p);
 static int TabletControl(DeviceIntPtr device, int what);
 static int _tablet_init_buttons(DeviceIntPtr device);
 static int _tablet_init_axes(DeviceIntPtr device, int firstCall);
-static void _tablet_init_axes_labels(TabletDevicePtr pTablet, int natoms, Atom *atoms);
 static void TabletReadInput(InputInfoPtr pInfo);
 
 
@@ -125,7 +124,6 @@ void TabletUnplug(pointer p)
 int TabletControl(DeviceIntPtr device, int what)
 {
 	InputInfoPtr pInfo = device->public.devicePrivate;
-	TabletDevicePtr pTablet = pInfo->private;
 	struct sockaddr_in addr;
 	int ret;
 
@@ -167,9 +165,8 @@ int TabletControl(DeviceIntPtr device, int what)
 int _tablet_init_buttons(DeviceIntPtr device)
 {
 	InputInfoPtr pInfo = device->public.devicePrivate;
-	TabletDevicePtr pTablet = pInfo->private;
 	Atom *labels = calloc(1, sizeof(Atom));
-	char map[] = { 0, 1 };
+	CARD8 map[] = { 0, 1 };
 
 	if (!InitButtonClassDeviceStruct(device, 1, labels, map)) {
 		xf86Msg(X_ERROR, "%s: Failed to register buttons.\n", pInfo->name);
@@ -185,7 +182,6 @@ int _tablet_init_axes(DeviceIntPtr device, int firstCall)
 {
 	InputInfoPtr pInfo = device->public.devicePrivate;
 	TabletDevicePtr pTablet = pInfo->private;
-	int i;
 	const int num_axes = 3;
 	Atom *labels;
 
