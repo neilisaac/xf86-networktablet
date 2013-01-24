@@ -26,9 +26,12 @@
 #include <X11/extensions/XKB.h>
 #include <xkbsrv.h>
 
-
-#include "networktablet.h"
 #include "protocol.h"
+
+typedef struct _TabletDeviceRec
+{
+	int maxX, maxY, maxPressure;
+} TabletDeviceRec, *TabletDevicePtr;
 
 static char tablet_driver_name[] = "networktablet";
 
@@ -235,6 +238,7 @@ void TabletReadInput(InputInfoPtr pInfo)
 			short pressure = ntohs(event.pressure);
 
 			switch (event.type) {
+
 			case EVENT_TYPE_MOTION:
 				xf86PostMotionEvent(pInfo->dev, TRUE, 0, 3, x, y, pressure);
 				break;
