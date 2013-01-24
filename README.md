@@ -11,8 +11,8 @@ mature, there are no security features etc.*
 What does it do?
 ================
 
-xf86-networktablet is an input driver for Xorg that creates a virtual tablet
-(absolute pointing device). The tablet can be controlled via UDP so that every network application can
+xf86-networktablet is an input driver for Xorg that creates a virtual tablet.
+The tablet can be controlled via UDP so that every network application can
 simulate movements and button clicks.
 
 The virtual tablet has 3 axes (x, y, pressure) and 1 button.
@@ -21,7 +21,7 @@ The virtual tablet has 3 axes (x, y, pressure) and 1 button.
 Installation
 ============
 
-Tested with Ubuntu 11.10 and 12.10 (64-bit)
+Tested with Ubuntu 11.10 and 12.10 (64-bit) and Arch (64-bit)
 
 * Install dependencies (X.org development files)
 * Adapt Makefile to your paths
@@ -55,4 +55,4 @@ The structure of the packets is defined in `protocol.h`.
 
 This input driver is used by the XorgTablet android application which enables
 you to use any Android device (especially these with stylus pen) as
-an X.org graphics tablet.
+an X.org graphics tablet for absolute or relative input.

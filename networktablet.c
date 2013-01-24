@@ -242,15 +242,25 @@ void TabletReadInput(InputInfoPtr pInfo)
 			case EVENT_TYPE_MOTION:
 				xf86PostMotionEvent(pInfo->dev, TRUE, 0, 3, x, y, pressure);
 				break;
+				
+			case EVENT_TYPE_MOTION_RELATIVE:
+				xf86PostMotionEvent(pInfo->dev, FALSE, 0, 3, x, y, pressure);
+				break;
+
 			case EVENT_TYPE_BUTTON:
 				xf86PostButtonEvent(pInfo->dev, TRUE, event.button, event.down, 0, 3, x, y, pressure);
 				break;
+
+			case EVENT_TYPE_BUTTON_RELATIVE:
+				xf86PostButtonEvent(pInfo->dev, FALSE, event.button, event.down, 0, 0);
+				break;
+
 			case EVENT_TYPE_SET_RESOLUTION:
 				pTablet->maxX = ntohs(event.x);
 				pTablet->maxY = ntohs(event.y);
 				pTablet->maxPressure = ntohs(event.pressure);
 				_tablet_init_axes(pInfo->dev, FALSE);
-				// break;
+				break;
 			}
 		}
 	}

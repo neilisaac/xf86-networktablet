@@ -8,6 +8,8 @@
 #define EVENT_TYPE_MOTION          0
 #define EVENT_TYPE_BUTTON          1
 #define EVENT_TYPE_SET_RESOLUTION  2
+#define EVENT_TYPE_MOTION_RELATIVE 3
+#define EVENT_TYPE_BUTTON_RELATIVE 4
 
 typedef struct _EventPacket
 {
